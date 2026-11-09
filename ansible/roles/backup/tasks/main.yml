@@ -1,7 +1,5 @@
-- name: Install AWS CLI
-  ansible.builtin.apt:
-    name: awscli
-    state: present
+- name: Install AWS CLI from the official distribution
+  ansible.builtin.import_tasks: install_aws_cli.yml
 
 - name: Create the private backup working directory
   ansible.builtin.file:

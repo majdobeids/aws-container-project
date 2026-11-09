@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="830" viewBox="0 0 1200 830">
+  <title>Automated Deployment of a Containerized App on AWS</title>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10"
+            refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 Z" fill="#93c5fd"/>
+    </marker>
+  </defs>
+
+  <style>
+    text { font-family: sans-serif; fill: #e2e8f0; }
+    .title { font-size: 25px; font-weight: bold; }
+    .label { font-size: 19px; }
+    .small { font-size: 16px; }
+    .arrow {
+      fill: none;
+      stroke: #93c5fd;
+      stroke-width: 3;
+      marker-end: url(#arrow);
+    }
+  </style>
+
+  <rect width="1200" height="830" fill="#0f172a"/>
+
+  <rect x="40" y="30" width="1120" height="150" rx="18"
+        fill="#1e293b" stroke="#64748b"/>
+  <text x="70" y="70" class="title">Deployment from the control machine</text>
+  <text x="70" y="115" class="label">GitHub branches + PRs → deploy.sh → Terraform → AWS resources</text>
+  <text x="70" y="150" class="label">Terraform outputs → Python inventory → Ansible roles + Vault</text>
+
+  <rect x="40" y="230" width="1120" height="400" rx="18"
+        fill="#172033" stroke="#a78bfa" stroke-width="2"/>
+  <text x="70" y="270" class="title">AWS VPC: 10.20.0.0/16 | Public subnet: 10.20.1.0/24</text>
+
+  <rect x="100" y="330" width="390" height="190" rx="15"
+        fill="#134e4a" stroke="#5eead4"/>
+  <text x="125" y="370" class="title">EC2: web</text>
+  <text x="125" y="410" class="label">Docker Compose</text>
+  <text x="125" y="445" class="label">Nginx :80 → Flask :8000</text>
+  <text x="125" y="480" class="small">Gunicorn / non-root app user</text>
+
+  <rect x="710" y="330" width="390" height="190" rx="15"
+        fill="#134e4a" stroke="#5eead4"/>
+  <text x="735" y="370" class="title">EC2: db</text>
+  <text x="735" y="410" class="label">Docker Compose / PostgreSQL</text>
+  <text x="735" y="445" class="label">Private IP :5432</text>
+  <text x="735" y="480" class="small">Persistent volume / encrypted EBS</text>
+
+  <path d="M295,180 L295,330" class="arrow"/>
+  <path d="M905,180 L905,330" class="arrow"/>
+  <text x="315" y="310" class="small">SSH</text>
+  <text x="925" y="310" class="small">SSH</text>
+
+  <path d="M490,425 L710,425" class="arrow"/>
+  <text x="515" y="395" class="small">Private connection</text>
+  <text x="515" y="455" class="small">5432 / web SG only</text>
+
+  <text x="75" y="565" class="small">SSH :22 from admin IPv4 /32 only. HTTP :80 follows http_cidr.</text>
+  <text x="75" y="600" class="small">Both servers use public IPv4 for SSH and outbound installs. No NAT Gateway.</text>
+
+  <rect x="100" y="710" width="390" height="90" rx="15"
+        fill="#1e293b" stroke="#64748b"/>
+  <text x="125" y="750" class="title">Bash health check</text>
+  <text x="125" y="780" class="small">/health checks PostgreSQL with SELECT 1</text>
+  <path d="M295,710 L295,630" class="arrow"/>
+  <text x="315" y="680" class="small">HTTP 200 required</text>
+
+  <rect x="710" y="710" width="390" height="90" rx="15"
+        fill="#312e81" stroke="#a78bfa"/>
+  <text x="735" y="750" class="title">Private S3 backup bucket</text>
+  <text x="735" y="780" class="small">SSE-S3 / postgres/ / 7-day retention</text>
+  <path d="M905,520 L905,710" class="arrow"/>
+  <text x="730" y="660" class="small">cron → pg_dump → tar → S3</text>
+  <text x="730" y="685" class="small">AWS CLI uses the EC2 IAM role</text>
+</svg>
