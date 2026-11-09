@@ -62,9 +62,13 @@ setup.sh ينشئ الملفات الناقصة ويحافظ على الموجو
 
     aws sts get-caller-identity
 
-إذا كنت تستخدم profile مسمى، صدّره قبل التشغيل:
+اعرض أسماء profiles المتوفرة:
 
-    export AWS_PROFILE=YOUR_PROFILE
+    aws configure list-profiles
+
+فعّل الاسم الحقيقي الذي تستخدمه. المثال التالي يطابق جهاز تنفيذ المشروع؛ غيّره إذا كان اسمك مختلفًا:
+
+    export AWS_PROFILE=my-project
 
 عدّل terraform/terraform.tfvars:
 
@@ -170,14 +174,26 @@ pg_dump ينسخ قاعدة التطبيق، ولا يشمل PostgreSQL global r
 - استجابة / بالرمز 200 و/health بالرمز 503 دون DB.
 - فحص Bash وتشغيل setup.sh بنجاح.
 
-النشر السحابي وchanged=0 والنسخ والاستعادة والحذف الفعلي لم تُثبت بعد.
-ستُحدّث النتائج بعد اختبارات AWS.
+نتائج التنفيذ على AWS — 2026-11-10:
+
+- نجح النشر باستخدام ./deploy.sh.
+- نجح فحص /health بالرمز HTTP 200.
+- نجح التشغيل الثاني: changed=0 وunreachable=0 وfailed=0 للخادمين.
+- نجح تشغيل النسخ الاحتياطي يدويًا ورفع الأرشيف إلى S3.
+- نجح تنزيل النسخة والتحقق من SHA256: database.dump: OK.
+- استجابت قاعدة اختبار Postgres المحلية لاستعلام SELECT 1.
+- خدمة cron كانت active، والخادم بتوقيت Etc/UTC، والمهمة مضبوطة على 02:00 يوميًا.
+- لم ننتظر موعد cron؛ اختبار النسخ الفعلي نُفّذ يدويًا.
+- نجح ./destroy.sh بحذف 17 موردًا، وأصبحت قائمة Terraform state فارغة.
+
+استُبدل تثبيت awscli عبر APT بمُثبّت AWS CLI v2 الرسمي، مع تجاوز التثبيت عند وجوده.
+رابط التطبيق مؤقت ويتوقف بعد حذف الموارد.
 
 ## GitHub workflow
 
 - main: الفرع الأساسي.
 - feature/terraform: البنية الأساسية — PR 1.
 - feature/ansible-compose: التطبيق وAnsible — PR 2.
-- feature/deploy-scripts: سكريبتات التشغيل والتوثيق — PR ثالث لاحقًا.
+- feature/deploy-scripts: سكريبتات التشغيل والتوثيق وإصلاح تثبيت AWS CLI — PR 3.
 
 لا توجد CI/CD workflows.
