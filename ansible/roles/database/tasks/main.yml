@@ -1,0 +1,25 @@
+- name: Write the database password from Vault
+  ansible.builtin.copy:
+    content: "{{ vault_db_password }}"
+    dest: "{{ app_dir }}/db_password"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
+- name: Render the database Compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ app_dir }}/compose.yml"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Start PostgreSQL and wait for readiness
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    project_name: container-db
+    state: present
+    pull: missing
+    wait: true
+    wait_timeout: 180

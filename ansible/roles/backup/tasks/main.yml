@@ -1,0 +1,44 @@
+- name: Install AWS CLI
+  ansible.builtin.apt:
+    name: awscli
+    state: present
+
+- name: Create the private backup working directory
+  ansible.builtin.file:
+    path: /var/backups/container-app
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Install the database backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: /usr/local/sbin/backup-postgres.sh
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Schedule the daily database backup
+  ansible.builtin.cron:
+    name: Postgres backup to S3
+    user: root
+    minute: '0'
+    hour: '2'
+    job: /usr/local/sbin/backup-postgres.sh >> /var/log/postgres-backup.log 2>&1
+
+- name: Configure backup log rotation
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/postgres-backup
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      /var/log/postgres-backup.log {
+          weekly
+          rotate 4
+          compress
+          missingok
+          notifempty
+          create 0600 root root
+      }

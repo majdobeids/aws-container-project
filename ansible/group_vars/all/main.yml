@@ -1,0 +1,3 @@
+app_dir: /opt/container-app
+db_name: appdb
+db_user: appuser
