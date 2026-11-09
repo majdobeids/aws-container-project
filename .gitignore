@@ -1,0 +1,17 @@
+.venv/
+.local/
+__pycache__/
+*.pyc
+
+.terraform/
+*.tfstate*
+*.tfplan
+terraform/terraform.tfvars
+
+ansible/inventory.json
+ansible/group_vars/all/vault.yml
+
+.env
+*.pem
+*.retry
+*.log
