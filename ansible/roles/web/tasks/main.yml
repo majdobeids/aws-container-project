@@ -1,0 +1,59 @@
+- name: Write the application password from Vault
+  ansible.builtin.copy:
+    content: "{{ vault_db_password }}"
+    dest: "{{ app_dir }}/db_password"
+    owner: root
+    group: '10001'
+    mode: '0440'
+  no_log: true
+
+- name: Copy the application build context
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../app/"
+    dest: "{{ app_dir }}/app/"
+    owner: root
+    group: root
+    mode: '0644'
+    directory_mode: '0755'
+  register: app_source
+  notify: Reload nginx
+
+- name: Render the Nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ app_dir }}/nginx.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Render the web Compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ app_dir }}/compose.yml"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Build and start the web services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    project_name: container-web
+    state: present
+    build: "{{ 'always' if app_source.changed else 'policy' }}"
+    pull: missing
+    wait: true
+    wait_timeout: 240
+  notify: Reload nginx
+
+- name: Apply pending Nginx reload
+  ansible.builtin.meta: flush_handlers
+
+- name: Check the application through Nginx
+  ansible.builtin.uri:
+    url: http://127.0.0.1/health
+    status_code: 200
+  register: health_result
+  until: health_result.status == 200
+  retries: 12
+  delay: 5

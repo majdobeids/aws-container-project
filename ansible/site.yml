@@ -1,0 +1,37 @@
+- name: Prepare the servers
+  hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Wait for SSH and Python
+      ansible.builtin.wait_for_connection:
+        timeout: 600
+        sleep: 10
+
+    - name: Wait for cloud-init to finish
+      ansible.builtin.command: cloud-init status --wait
+      changed_when: false
+
+    - name: Gather system facts
+      ansible.builtin.setup:
+
+ 
+  roles:
+    - common
+    - docker
+
+- name: Deploy the database
+  hosts: db
+  become: true
+
+  roles:
+    - database
+    - backup
+
+- name: Deploy the web application
+  hosts: web
+  become: true
+
+  roles:
+    - web

@@ -1,0 +1,16 @@
+- name: Reload nginx
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --project-directory
+      - "{{ app_dir }}"
+      - -p
+      - container-web
+      - exec
+      - -T
+      - nginx
+      - nginx
+      - -s
+      - reload
+  changed_when: true
